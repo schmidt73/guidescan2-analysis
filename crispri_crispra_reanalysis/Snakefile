@@ -1,0 +1,88 @@
+inputs = [
+    "Doench2018-SetA_CRISPRi_A375_1",
+    "Doench2018-SetA_CRISPRi_A375_1",
+    "Doench2018-SetA_CRISPRi_A375_2",
+    "Doench2018-SetA_CRISPRi_A375_2",
+    "Doench2018-SetA_CRISPRi_A375_3",
+    "Doench2018-SetA_CRISPRi_A375_3",
+    "Doench2018-SetA_CRISPRi_HT29_1",
+    "Doench2018-SetA_CRISPRi_HT29_1",
+    "Doench2018-SetA_CRISPRi_HT29_2",
+    "Doench2018-SetA_CRISPRi_HT29_2",
+    "Doench2018-SetA_CRISPRi_HT29_3",
+    "Doench2018-SetA_CRISPRi_HT29_3",
+    "Doench2018-SetB_CRISPRi_A375_1",
+    "Doench2018-SetB_CRISPRi_A375_1",
+    "Doench2018-SetB_CRISPRi_A375_2",
+    "Doench2018-SetB_CRISPRi_A375_2",
+    "Doench2018-SetB_CRISPRi_A375_3",
+    "Doench2018-SetB_CRISPRi_A375_3",
+    "Doench2018-SetB_CRISPRi_HT29_1",
+    "Doench2018-SetB_CRISPRi_HT29_1",
+    "Doench2018-SetB_CRISPRi_HT29_2",
+    "Doench2018-SetB_CRISPRi_HT29_2",
+    "Doench2018-SetB_CRISPRi_HT29_3",
+    "Doench2018-SetB_CRISPRi_HT29_3",
+    "Lim2017_CRISPRi_HEK293T_1",
+    "Lim2017_CRISPRi_HEK293T_1",
+    "Lim2017_CRISPRi_HeLa_1",
+    "Lim2017_CRISPRi_HeLa_1",
+    "Lim2017_CRISPRi_HeLa_2",
+    "Lim2017_CRISPRi_HeLa_2",
+    "Lim2017_CRISPRi_iPSC_1",
+    "Lim2017_CRISPRi_iPSC_1",
+    "Lim2017_CRISPRi_iPSC_2",
+    "Lim2017_CRISPRi_iPSC_2",
+    "Lim2017_CRISPRi_K562_1",
+    "Lim2017_CRISPRi_K562_1",
+    "Lim2017_CRISPRi_K562_2",
+    "Lim2017_CRISPRi_K562_2",
+    "Lim2017_CRISPRi_MCF7_1",
+    "Lim2017_CRISPRi_MCF7_1",
+    "Lim2017_CRISPRi_MCF7_2",
+    "Lim2017_CRISPRi_MCF7_2",
+    "Lim2017_CRISPRi_MDA-MB-231_1",
+    "Lim2017_CRISPRi_MDA-MB-231_1",
+    "Lim2017_CRISPRi_MDA-MB-231_2",
+    "Lim2017_CRISPRi_MDA-MB-231_2",
+    "Lim2017_CRISPRi_U87_1",
+    "Lim2017_CRISPRi_U87_1",
+    "Lim2017_CRISPRi_U87_2",
+    "Lim2017_CRISPRi_U87_2",
+    "Weissman2016_CRISPRa_K562_1",
+    "Weissman2016_CRISPRa_K562_2",
+    "Weissman2016_CRISPRi_K562_1",
+    "Weissman2016_CRISPRi_K562_2",
+    "Weissman2021_CRISPRoff_HEK293T_1",
+    "Weissman2021_CRISPRoff_HEK293T_2",
+    "Weissman2021_CRISPRoff_HEK293TMUT_1",
+    "Weissman2021_CRISPRoff_HEK293TMUT_2",
+    "Weissman2021_CRISPRi_HEK293T_1",
+    "Weissman2021_CRISPRi_HEK293T_2",
+]
+
+rule all:
+    input:
+        results=[f"results/mageck/{inp}.gene_summary.txt" for inp in inputs],
+        results_no_controls=[f"results/mageck/{inp}.nocontrols.gene_summary.txt" for inp in inputs]
+
+ruleorder: mageck_no_controls > mageck_with_controls
+
+rule mageck_no_controls:
+    input:
+        counts="data/mageck_counts/{screen}_{crispr_design}_{cell_type}_{replicate}_counts.txt",
+    output:
+        gene_summary="results/mageck/{screen}_{crispr_design}_{cell_type}_{replicate}.nocontrols.gene_summary.txt"
+    shell:
+        "mageck test -k {input.counts} -t final -c initial -n "
+        "results/mageck/{wildcards.screen}_{wildcards.crispr_design}_{wildcards.cell_type}_{wildcards.replicate}.nocontrols"
+
+rule mageck_with_controls:
+    input:
+        counts="data/mageck_counts/{screen}_{crispr_design}_{cell_type}_{replicate}_counts.txt",
+        controls="data/mageck_counts/{screen}_{crispr_design}_{cell_type}_{replicate}_controls.txt"
+    output:
+        gene_summary="results/mageck/{screen}_{crispr_design}_{cell_type}_{replicate}.gene_summary.txt"
+    shell:
+        "mageck test -k {input.counts} --control-sgrna {input.controls} -t final -c initial -n "
+        "results/mageck/{wildcards.screen}_{wildcards.crispr_design}_{wildcards.cell_type}_{wildcards.replicate}"

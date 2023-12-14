@@ -1,0 +1,103 @@
+guidescan2_index = '/n/fs/ragr-research/projects/guidescan2/genomes/GCF_000001405.40_GRCh38.p14_genomic.fna.index'
+flashfry_index   = '/n/fs/ragr-research/projects/guidescan2/indices/flash_fry/hg38'
+crispritz_index  = '/n/fs/ragr-research/projects/guidescan2/genomes/chromosomes'
+crispritz_pam_file = '/n/fs/ragr-research/projects/guidescan2/indices/crispritz/pam_NRG.txt'
+
+guidetypes = [
+    "published",
+    "cds",
+    "lnc",
+    "unif"
+]
+
+guidescan2_timing_results = expand(
+    "timing_results/guidescan2/{guidetype}_{sample_size}_k{mismatches}_t{threads}_NRG.benchmark",
+    guidetype = guidetypes,
+    sample_size = [10, 100, 1000],
+    mismatches  = [2, 3, 4, 5],
+    threads     = [2, 4, 8]
+)
+
+flashfry_timing_results = expand(
+    "timing_results/flashfry/{guidetype}_{sample_size}_k{mismatches}_t1_NRG.benchmark",
+    guidetype = guidetypes[1:],
+    sample_size = [10, 100, 1000],
+    mismatches  = [2, 3, 4, 5],
+)
+
+crispritz_timing_results = expand(
+    "timing_results/crispritz/{guidetype}_{sample_size}_k{mismatches}_t{threads}_NRG.benchmark",
+    guidetype = guidetypes[1:],
+    sample_size = [10, 100, 1000],
+    mismatches  = [2, 3, 4, 5],
+    threads     = [2, 4, 8]
+)
+
+rule all:
+    input:
+        crispritz_timing_results,
+        guidescan2_timing_results,
+        flashfry_timing_results
+
+rule flashfry_subsample:
+    input:
+        guideset = 'data/random_{guidetype}_guides.csv'
+    output:
+        flashfry_fasta = 'data/flashfry/{guidetype}_{sample_size}.fasta'
+    shell:
+        'python scripts/flashfry.py {input.guideset} -n {wildcards.sample_size} > {output.flashfry_fasta}'
+
+rule flashfry_time:
+    input:
+        fasta = 'data/flashfry/{guidetype}_{sample_size}.fasta',
+        index = flashfry_index
+    output:
+        result = 'results/flashfry/{guidetype}_{sample_size}_k{mismatches}_t1_NRG.txt'
+    benchmark:
+        'timing_results/flashfry/{guidetype}_{sample_size}_k{mismatches}_t1_NRG.benchmark'
+    shell:
+        'java -Xmx32g -jar ~/bin/flashfry.jar discover --database {input.index} --fasta {input.fasta}'
+        ' --flankingSequence 0 --output {output.result} --maximumOffTargets 10000000'
+        ' --maxMismatch {wildcards.mismatches}'
+
+rule crispritz_subsample:
+    input:
+        guideset = 'data/random_{guidetype}_guides.csv'
+    output:
+        crispritz_txt = 'data/crispritz/{guidetype}_{sample_size}.txt'
+    shell:
+        'python scripts/crispritz.py {input.guideset} -n {wildcards.sample_size} > {output.crispritz_txt}'
+
+rule crispritz_time:
+    input:
+        guides_file = 'data/crispritz/{guidetype}_{sample_size}.txt',
+    output:
+        result = 'results/crispritz/{guidetype}_{sample_size}_k{mismatches}_t{threads}.targets.txt'
+    benchmark:
+        'timing_results/crispritz/{guidetype}_{sample_size}_k{mismatches}_t{threads}_NRG.benchmark'
+    shell:
+        f'crispritz.py search {crispritz_index} {crispritz_pam_file} {{input.guides_file}} '
+        f'results/crispritz/{{wildcards.guidetype}}_{{wildcards.sample_size}}_k{{wildcards.mismatches}}_t{{wildcards.threads}} '
+        '-index -mm {wildcards.mismatches} -t -th {wildcards.threads}'
+
+rule guidescan_subsample:
+    input:
+        guideset = 'data/random_{guidetype}_guides.csv'
+    output:
+        guidescan_csv = 'data/guidescan2/{guidetype}_{sample_size}.csv'
+    shell:
+        'python scripts/guidescan2.py {input.guideset} -n {wildcards.sample_size} > {output.guidescan_csv}'
+
+rule guidescan_time:
+    input:
+        kmers_csv = 'data/guidescan2/{guidetype}_{sample_size}.csv',
+        index_forward = f'{guidescan2_index}.forward',
+        index_reverse = f'{guidescan2_index}.reverse',
+        index_structure = f'{guidescan2_index}.gs'
+    output:
+        sam = 'results/guidescan2/{guidetype}_{sample_size}_k{mismatches}_t{threads}_NRG.sam'
+    benchmark:
+        'timing_results/guidescan2/{guidetype}_{sample_size}_k{mismatches}_t{threads}_NRG.benchmark'
+    shell:
+        f'guidescan2 enumerate {guidescan2_index} --kmers-file {{input.kmers_csv}} --output {{output.sam}}'
+        f' --threads {{wildcards.threads}} --alt-pam NAG --mismatches {{wildcards.mismatches}}'
