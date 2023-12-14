@@ -11,6 +11,10 @@ def parse_arguments():
     )
 
     parser.add_argument(
+        "--controls", default=False, action="store_true",
+    )
+
+    parser.add_argument(
         "mageck_gene_summaries", nargs="+"
     )
 
@@ -22,7 +26,11 @@ if __name__ == "__main__":
     dfs = []
     for gene_summary_file in args.mageck_gene_summaries:
         name = os.path.basename(gene_summary_file)
-        publication, crispr_system, cell_line, replicate = name[:-len(".nocontrols.gene_summary.txt")].split("_")
+
+        if args.controls:
+            publication, crispr_system, cell_line, replicate = name[:-len(".gene_summary.txt")].split("_")
+        else:
+            publication, crispr_system, cell_line, replicate = name[:-len(".nocontrols.gene_summary.txt")].split("_")
 
         gene_summary = pd.read_csv(gene_summary_file, sep='\t')
 

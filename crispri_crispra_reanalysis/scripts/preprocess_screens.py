@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import argparse
@@ -160,6 +161,10 @@ if __name__ == "__main__":
     all_data = pd.concat([lim2017, weissman2016, doench2018, weissman2021])
     all_data.to_csv("data/preprocessed_screen_counts.csv")
 
+
+    if not os.path.exists("data/mageck_counts"):
+        os.mkdir("data/mageck_counts")
+
     control_names = ['CONTROL', 'CTRL', 'negative_ctrl', 'negative_control']
     conditions = all_data.groupby(["publication", "crispr_system", "cell_line", "replicate"])
     for ((publication, crispr_system, cell_line, replicate), count_df) in conditions: 
@@ -177,6 +182,7 @@ if __name__ == "__main__":
 
         mageck_ctrls_df = mageck_df[mageck_df['gene'].isin(control_names)][["sgRNA"]]
 
+        
         mageck_df.to_csv(f"data/mageck_counts/{publication}_{crispr_system}_{cell_line}_{replicate}_counts.txt", index=False, sep='\t')
         mageck_ctrls_df.to_csv(f"data/mageck_counts/{publication}_{crispr_system}_{cell_line}_{replicate}_controls.txt", index=False, sep='\t')
 
