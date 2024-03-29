@@ -40,3 +40,10 @@ the `outputs/` directory:
 - `all_libraries_mouse_kmers.csv`: mouse gRNAs from all libraries in Guidescan2 kmer format
 - `all_libraries_human_kmers.csv`: human gRNAs from all libraries in Guidescan2 kmer format
 
+Now, we are ready to run `guidescan`:
+```bash
+$ guidescan enumerate /n/fs/ragr-research/projects/guidescan2/genomes/GCF_000001405.40_GRCh38.p14_genomic.fna.index \
+                      --kmers-file outputs/all_libraries_human_kmers.csv --alt-pam NAG --mismatches 3 \
+                      --output outputs/all_libraries_human_kmers_guidescan.sam  --format sam
+```
+

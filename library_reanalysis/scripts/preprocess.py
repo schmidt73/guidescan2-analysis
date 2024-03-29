@@ -69,6 +69,7 @@ def preprocess_liu():
     liu_df = liu_df.rename(columns={"sgrna": "id", "seq": "sequence", "gene": "gene"})
     liu_df['library'] = 'liu'
     liu_df['species'] = 'mouse'
+    liu_df['sequence'] = liu_df['sequence'] + 'G'
     liu_df = liu_df[~liu_df['gene'].isna()]
     liu_df = liu_df[~liu_df['gene'].str.contains('CTRL')]
     liu_df = liu_df[['id', 'library', 'species', 'gene', 'sequence']]
@@ -90,6 +91,7 @@ def preprocess_teichmann():
     teichmann_df = teichmann_df.rename(columns={"guide_sequence": "sequence", "gRNA_ID": "id", "gene": "gene"})
     teichmann_df['library'] = 'teichmann'
     teichmann_df['species'] = 'mouse'
+    teichmann_df['sequence'] = teichmann_df['sequence'] + 'G'
     teichmann_df = teichmann_df[['id', 'library', 'species', 'gene', 'sequence']]
     return teichmann_df
 
