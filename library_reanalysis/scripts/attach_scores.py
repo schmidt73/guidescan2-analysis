@@ -11,8 +11,8 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    scores1_df = pandas.read_csv(args.scores1, header=None, names=["id", "specificity"])
-    scores2_df = pandas.read_csv(args.scores2, header=None, names=["id", "specificity"])
+    scores1_df = pandas.read_csv(args.scores1, header=None, names=["id", "specificity", "cutting_efficiency"])
+    scores2_df = pandas.read_csv(args.scores2, header=None, names=["id", "specificity", "cutting_efficiency"])
     scores_df = pandas.concat([scores1_df, scores2_df])
     library_df = pandas.read_csv(args.input)
 

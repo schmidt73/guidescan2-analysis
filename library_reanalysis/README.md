@@ -14,6 +14,8 @@ table below.
 | `minlibcas9_library.csv` | Human | MinLibCas9 | Garnett Lab | 10.1186/s13059-021-02268-4 | 
 | `dgrna_metadata.csv` | Human | minimized double gRNA CRISPRko | Parts Lab | 10.1101/859652 | 
 | `guidescan2_human.csv` | Mouse | GuideScan Mouse | Pritykin Lab | 10.1101/2022.05.02.490368 |
+| `gattinara_human.csv` | Human | Gattinara | Doench Lab | 10.1038/s41467-020-14620-6 |
+| `gouda_human.csv` | Mouse | Gouda | Doench Lab | 10.1038/s41467-020-14620-6 |
 
 Then, we pre-process the gRNA libraries into a unified format
 to be used by the `guidescan` tool. In particular, we tag each gRNA
@@ -24,6 +26,8 @@ sequence. To do this, we run the following script:
 $ python scripts/preprocess.py
                            count      mean       std  min  25%  50%  75%    max
 library         species
+gattinara       human    20992.0  1.951410  0.215678  1.0  2.0  2.0  2.0    4.0
+gouda           mouse    22601.0  1.953675  0.210824  1.0  2.0  2.0  2.0    4.0
 guidescan2      human    18232.0  5.911200  0.604103  1.0  6.0  6.0  6.0    6.0
                 mouse    20908.0  5.864167  0.714533  1.0  6.0  6.0  6.0    6.0
 liu             mouse    18705.0  4.965410  1.887652  1.0  5.0  5.0  5.0  243.0

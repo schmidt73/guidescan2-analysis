@@ -12,6 +12,8 @@ import numpy as np
 | `minlibcas9_library.csv` | Human | MinLibCas9 | Garnett Lab | 10.1186/s13059-021-02268-4 | 
 | `dgrna_metadata.csv` | Human | minimized double gRNA CRISPRko | Parts Lab | 10.1101/859652 | 
 | `guidescan2_human.csv` | Mouse | GuideScan Mouse | Pritykin Lab | 10.1101/2022.05.02.490368 |
+| `gattinara_human.csv` | Human | Gattinara | Doench Lab | 10.1038/s41467-020-14620-6 |
+| `gouda_human.csv` | Mouse | Gouda | Doench Lab | 10.1038/s41467-020-14620-6 |
 """
 
 """ Preprocess the data from the different  input 
@@ -30,6 +32,24 @@ def preprocess_guidescan2(species):
     guidescan2_df['species'] = species
     guidescan2_df = guidescan2_df[['id', 'library', 'species', 'gene', 'sequence']]
     return guidescan2_df
+
+def preprocess_gouda():
+    gouda_df = pd.read_csv("inputs/mouse/gouda_sequences.txt", sep='\t')
+    gouda_df = gouda_df.rename(columns={"Barcode Sequence": "sequence", "Annotated Gene Symbol": "gene"})
+    gouda_df['library'] = 'gouda'
+    gouda_df['species'] = 'mouse'
+    gouda_df['id'] = gouda_df['gene'] + '_' + (gouda_df.groupby('gene').cumcount() + 1).astype(str)
+    gouda_df = gouda_df[['id', 'library', 'species', 'gene', 'sequence']]
+    return gouda_df
+
+def preprocess_gattinara():
+    gattinara_df = pd.read_csv("inputs/human/gattinara_sequences.txt", sep='\t')
+    gattinara_df = gattinara_df.rename(columns={"Barcode Sequence": "sequence", "Annotated Gene Symbol": "gene"})
+    gattinara_df['library'] = 'gattinara'
+    gattinara_df['species'] = 'human'
+    gattinara_df['id'] = gattinara_df['gene'] + '_' + (gattinara_df.groupby('gene').cumcount() + 1).astype(str)
+    gattinara_df = gattinara_df[['id', 'library', 'species', 'gene', 'sequence']]
+    return gattinara_df
 
 def preprocess_minlabcas9():
     minlabcas9_df = pd.read_csv("inputs/human/minlibcas9_library.csv")
@@ -75,17 +95,6 @@ def preprocess_liu():
     liu_df = liu_df[['id', 'library', 'species', 'gene', 'sequence']]
     return liu_df
 
-"""
-$ head inputs/mouse/teichman_mouse_v2_grnas.csv
-gRNA_ID,gene,guide_sequence
-0610007P14Rik_CCDS26063.1_ex1_12:85816364-85816386:+_5-1,0610007P14Rik,AAATACAAACAACTCTGAG
-0610007P14Rik_CCDS26063.1_ex1_12:85816385-85816407:+_5-2,0610007P14Rik,GAAGTGTCCCAGGGCGAGG
-0610007P14Rik_CCDS26063.1_ex1_12:85816413-85816435:-_5-3,0610007P14Rik,ACTCTATCACATCACACTG
-0610007P14Rik_CCDS26063.1_ex2_12:85819535-85819557:-_5-4,0610007P14Rik,AGCCCGGACCTTTGGGATC
-0610007P14Rik_CCDS26063.1_ex3_12:85822102-85822124:-_5-5,0610007P14Rik,TCTACGAGAAGCTCTACAC
-0610009B22Rik_CCDS36149.1_ex0_11:51685793-51685815:-_5-1,0610009B22Rik,CTGCATGACGTGAGGCACG
-0610009B22Rik_CCDS36149.1_ex0_11:51685824-51685846:-_5-2,0610009B22Rik,CGTCACGGCTGGGCACATG
-"""
 def preprocess_teichmann():
     teichmann_df = pd.read_csv("inputs/mouse/teichman_mouse_v2_grnas.csv")
     teichmann_df = teichmann_df.rename(columns={"guide_sequence": "sequence", "gRNA_ID": "id", "gene": "gene"})
@@ -114,6 +123,12 @@ if __name__ == "__main__":
     dfs.append(df)
 
     df = preprocess_teichmann()
+    dfs.append(df)
+
+    df = preprocess_gouda()
+    dfs.append(df)
+
+    df = preprocess_gattinara()
     dfs.append(df)
 
     all_libs_df = pd.concat(dfs)
